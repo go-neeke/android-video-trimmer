@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.media.MediaMetadataRetriever;
@@ -15,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,15 +41,26 @@ import com.bumptech.glide.request.RequestOptions;
 import com.crystal.crystalrangeseekbar.widgets.CrystalRangeSeekbar;
 import com.crystal.crystalrangeseekbar.widgets.CrystalSeekbar;
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioAttributes;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.gson.Gson;
 import com.gowtham.library.R;
@@ -194,16 +207,18 @@ public class ActVideoTrimmer extends LocalizationActivity {
      **/
     private void initPlayer() {
         try {
-            videoPlayer = new SimpleExoPlayer.Builder(this).build();
+            BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+            TrackSelection.Factory videoTrackSelectionFactory =
+                    new AdaptiveTrackSelection.Factory(bandwidthMeter);
+            TrackSelector trackSelector =
+                    new DefaultTrackSelector(videoTrackSelectionFactory);
+
+            //Create the player using ExoPlayerFactory
+            videoPlayer = ExoPlayerFactory.newSimpleInstance(this.getApplicationContext(), trackSelector);
+
+//            videoPlayer = new ExoPlayerFactory.newSimpleInstance(this.getApplicationContext(), trackSelector);
             playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
             playerView.setPlayer(videoPlayer);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                        .setUsage(C.USAGE_MEDIA)
-                        .setContentType(C.CONTENT_TYPE_MOVIE)
-                        .build();
-                videoPlayer.setAudioAttributes(audioAttributes, true);
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -213,11 +228,11 @@ public class ActVideoTrimmer extends LocalizationActivity {
         try {
             Runnable fileUriRunnable = () -> {
                 uri = Uri.parse(bundle.getString(TrimVideo.TRIM_VIDEO_URI));
-//              String path = FileUtils.getPath(ActVideoTrimmer.this, uri);
-                String path=FileUtils.getRealPath(ActVideoTrimmer.this,uri);
+                String path = FileUtils.getPath(ActVideoTrimmer.this, uri);
                 uri = Uri.parse(path);
                 runOnUiThread(() -> {
                     LogMessage.v("VideoUri:: " + uri);
+                    LogMessage.v("VideoUri:: " + uri.getPath());
                     progressBar.setVisibility(View.GONE);
                     totalDuration = TrimmerUtils.getDuration(ActVideoTrimmer.this, uri);
                     imagePlayPause.setOnClickListener(v ->
@@ -285,20 +300,36 @@ public class ActVideoTrimmer extends LocalizationActivity {
     private void buildMediaSource(Uri mUri) {
         try {
             DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, getString(R.string.app_name));
-            MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(mUri));
-            videoPlayer.addMediaSource(mediaSource);
-            videoPlayer.prepare();
+            MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(mUri);
+            videoPlayer.prepare(videoSource);
             videoPlayer.setPlayWhenReady(true);
             videoPlayer.addListener(new Player.EventListener() {
+//                @Override
+//                public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
+//                    imagePlayPause.setVisibility(playWhenReady ? View.GONE :
+//                            View.VISIBLE);
+//                }
+
                 @Override
-                public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
-                    imagePlayPause.setVisibility(playWhenReady ? View.GONE :
+                public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
+
+                }
+
+                @Override
+                public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+                }
+
+                @Override
+                public void onLoadingChanged(boolean isLoading) {
+                    imagePlayPause.setVisibility(isLoading ? View.GONE :
                             View.VISIBLE);
                 }
 
                 @Override
-                public void onPlaybackStateChanged(int state) {
-                    switch (state) {
+                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                    switch (playbackState) {
                         case Player.STATE_ENDED:
                             LogMessage.v("onPlayerStateChanged: Video ended.");
                             imagePlayPause.setVisibility(View.VISIBLE);
@@ -318,6 +349,36 @@ public class ActVideoTrimmer extends LocalizationActivity {
                             LogMessage.v("onPlayerStateChanged: STATE_IDLE.");
                             break;
                     }
+                }
+
+                @Override
+                public void onRepeatModeChanged(int repeatMode) {
+
+                }
+
+                @Override
+                public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+
+                }
+
+                @Override
+                public void onPlayerError(ExoPlaybackException error) {
+
+                }
+
+                @Override
+                public void onPositionDiscontinuity(int reason) {
+
+                }
+
+                @Override
+                public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
+                }
+
+                @Override
+                public void onSeekProcessed() {
+
                 }
 
             });
