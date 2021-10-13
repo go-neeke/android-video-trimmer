@@ -603,7 +603,7 @@ public class ActVideoTrimmer extends LocalizationActivity {
         if (fileName != null && !fileName.isEmpty())
             fName = fileName;
         File newFile = new File(path + File.separator +
-                (fName) + fileDateTime + "." + TrimmerUtils.getFileExtension(this, uri));
+                (fName) + fileDateTime + TrimmerUtils.getFileExtension(this, uri));
         return String.valueOf(newFile);
     }
 
