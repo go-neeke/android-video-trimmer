@@ -187,6 +187,10 @@ public class ActVideoTrimmer extends LocalizationActivity {
         imageViews = new ImageView[]{imageOne, imageTwo, imageThree,
                 imageFour, imageFive, imageSix, imageSeven, imageEight};
         seekHandler = new Handler();
+
+        if (trimVideoOptions.mediaType != 1) {
+            findViewById(R.id.view_video_controller).setVisibility(View.GONE);
+        }
         initPlayer();
         if (checkStoragePermission())
             setDataInView();
@@ -536,8 +540,12 @@ public class ActVideoTrimmer extends LocalizationActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_done, menu);
-        return true;
+        if (trimVideoOptions.mediaType == 1) {
+            getMenuInflater().inflate(R.menu.menu_done, menu);
+            return true;
+        }
+
+        return false;
     }
 
     @Override

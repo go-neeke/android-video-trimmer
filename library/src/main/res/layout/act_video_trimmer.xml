@@ -35,13 +35,15 @@
 
             <ProgressBar
                 android:id="@+id/progress_circular"
-                android:layout_centerInParent="true"
-                style="@style/WView" />
+                style="@style/WView"
+                android:layout_centerInParent="true" />
         </RelativeLayout>
 
     </LinearLayout>
 
-    <include layout="@layout/view_video_controller" />
+    <include
+        android:id="@+id/view_video_controller"
+        layout="@layout/view_video_controller" />
 
     <TextView
         android:id="@+id/txt_start_duration"
