@@ -190,8 +190,6 @@ public class ActVideoTrimmer extends LocalizationActivity {
 
         if (trimVideoOptions.mediaType != 1) {
             findViewById(R.id.view_video_controller).setVisibility(View.GONE);
-            txtStartDuration.setVisibility(View.GONE);
-            txtEndDuration.setVisibility(View.GONE);
             getSupportActionBar().setTitle("Preview Video");
         }
         initPlayer();
@@ -249,7 +247,9 @@ public class ActVideoTrimmer extends LocalizationActivity {
                     initTrimData();
                     buildMediaSource(uri);
                     loadThumbnails();
-                    setUpSeekBar();
+                    if (trimVideoOptions.mediaType == 1) {
+                        setUpSeekBar();
+                    }
                 });
             };
             Executors.newSingleThreadExecutor().execute(fileUriRunnable);
