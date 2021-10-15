@@ -190,6 +190,9 @@ public class ActVideoTrimmer extends LocalizationActivity {
 
         if (trimVideoOptions.mediaType != 1) {
             findViewById(R.id.view_video_controller).setVisibility(View.GONE);
+            txtStartDuration.setVisibility(View.GONE);
+            txtEndDuration.setVisibility(View.GONE);
+            getSupportActionBar().setTitle("Preview Video");
         }
         initPlayer();
         if (checkStoragePermission())
