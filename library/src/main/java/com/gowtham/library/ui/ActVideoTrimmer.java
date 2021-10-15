@@ -188,10 +188,6 @@ public class ActVideoTrimmer extends LocalizationActivity {
                 imageFour, imageFive, imageSix, imageSeven, imageEight};
         seekHandler = new Handler();
 
-        if (trimVideoOptions.mediaType != 1) {
-            findViewById(R.id.view_video_controller).setVisibility(View.GONE);
-            getSupportActionBar().setTitle("Preview Video");
-        }
         initPlayer();
         if (checkStoragePermission())
             setDataInView();
@@ -201,7 +197,11 @@ public class ActVideoTrimmer extends LocalizationActivity {
         try {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setTitle(title != null ? title : getString(R.string.txt_edt_video));
+            if (trimVideoOptions.mediaType == 1) {
+                actionBar.setTitle(title != null ? title : getString(R.string.txt_edt_video));
+            } else {
+                actionBar.setTitle(title != null ? title : "Preview Video");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -247,9 +247,7 @@ public class ActVideoTrimmer extends LocalizationActivity {
                     initTrimData();
                     buildMediaSource(uri);
                     loadThumbnails();
-                    if (trimVideoOptions.mediaType == 1) {
-                        setUpSeekBar();
-                    }
+                    setUpSeekBar();
                 });
             };
             Executors.newSingleThreadExecutor().execute(fileUriRunnable);
