@@ -197,7 +197,7 @@ public class ActVideoTrimmer extends LocalizationActivity {
         try {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowHomeEnabled(true);
-            if (trimVideoOptions.mediaType == 1) {
+            if (trimVideoOptions.isEnableEdit) {
                 actionBar.setTitle(title != null ? title : getString(R.string.txt_edt_video));
             } else {
                 actionBar.setTitle(title != null ? title : "Preview Video");
@@ -541,7 +541,7 @@ public class ActVideoTrimmer extends LocalizationActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (trimVideoOptions.mediaType == 1) {
+        if (trimVideoOptions.isEnableEdit) {
             getMenuInflater().inflate(R.menu.menu_done, menu);
             return true;
         }

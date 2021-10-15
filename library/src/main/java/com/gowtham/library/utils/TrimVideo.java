@@ -37,8 +37,8 @@ public class TrimVideo {
             options.trimType = TrimType.DEFAULT;
         }
 
-        public ActivityBuilder setSelectedMediaType(final int mediaType) {
-            options.mediaType = mediaType;
+        public ActivityBuilder setEnableEdit(final boolean isEnableEdit) {
+            options.isEnableEdit = isEnableEdit;
             return this;
         }
 
