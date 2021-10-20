@@ -636,8 +636,8 @@ public class ActVideoTrimmer extends LocalizationActivity {
                     "-i", String.valueOf(uri), "-s", compressOption.getWidth() + "x" +
                     compressOption.getHeight(),
                     "-r", String.valueOf(compressOption.getFrameRate()),
-                    "-vcodec", "mpeg4", ":v",
-                    compressOption.getBitRate(), ":a", "48000", "-ac", "2", "-ar",
+                    "-vcodec", "mpeg4", "-b",
+                    compressOption.getBitRate(), "-b:a", "48000", "-ac", "2", "-ar",
                     "22050", "-t",
                     TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue), outputPath};
         }
@@ -648,15 +648,15 @@ public class ActVideoTrimmer extends LocalizationActivity {
             return new String[]{"-ss", TrimmerUtils.formatCSeconds(lastMinValue),
                     "-i", String.valueOf(uri),
                     "-s", w + "x" + h, "-r", "30",
-                    "-vcodec", "mpeg4", ":v",
-                    "1M", ":a", "48000", "-ac", "2", "-ar", "22050",
+                    "-vcodec", "mpeg4", "-b",
+                    "1M", "-b:a", "48000", "-ac", "2", "-ar", "22050",
                     "-t",
                     TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue), outputPath};
         } else {
             return new String[]{"-ss", TrimmerUtils.formatCSeconds(lastMinValue),
                     "-i", String.valueOf(uri), "-s", w + "x" + h, "-r",
-                    "30", "-vcodec", "mpeg4", ":v",
-                    "400K", ":a", "48000", "-ac", "2", "-ar", "22050",
+                    "30", "-vcodec", "mpeg4", "-b",
+                    "400K", "-b:a", "48000", "-ac", "2", "-ar", "22050",
                     "-t",
                     TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue), outputPath};
         }
