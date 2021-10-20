@@ -105,7 +105,7 @@ public class TrimmerUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "mp4";
+        return ".mp4";
     }
 
 
