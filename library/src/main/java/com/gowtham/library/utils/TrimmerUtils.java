@@ -101,11 +101,11 @@ public class TrimmerUtils {
                 extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uri));
             } else
                 extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(uri.getPath())).toString());
-            return (extension == null || extension.isEmpty()) ? ".mp4" : extension;
+            return (extension == null || extension.isEmpty()) ? "mp4" : extension;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return ".mp4";
+        return "mp4";
     }
 
 
