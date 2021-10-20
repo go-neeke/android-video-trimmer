@@ -636,8 +636,8 @@ public class ActVideoTrimmer extends LocalizationActivity {
                     "-i", String.valueOf(uri), "-s", compressOption.getWidth() + "x" +
                     compressOption.getHeight(),
                     "-r", String.valueOf(compressOption.getFrameRate()),
-                    "-vcodec", "mpeg4", "-b:v",
-                    compressOption.getBitRate(), "-b:a", "48000", "-ac", "2", "-ar",
+                    "-vcodec", "mpeg4", ":v",
+                    compressOption.getBitRate(), ":a", "48000", "-ac", "2", "-ar",
                     "22050", "-t",
                     TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue), outputPath};
         }
@@ -648,15 +648,15 @@ public class ActVideoTrimmer extends LocalizationActivity {
             return new String[]{"-ss", TrimmerUtils.formatCSeconds(lastMinValue),
                     "-i", String.valueOf(uri),
                     "-s", w + "x" + h, "-r", "30",
-                    "-vcodec", "mpeg4", "-b:v",
-                    "1M", "-b:a", "48000", "-ac", "2", "-ar", "22050",
+                    "-vcodec", "mpeg4", ":v",
+                    "1M", ":a", "48000", "-ac", "2", "-ar", "22050",
                     "-t",
                     TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue), outputPath};
         } else {
             return new String[]{"-ss", TrimmerUtils.formatCSeconds(lastMinValue),
                     "-i", String.valueOf(uri), "-s", w + "x" + h, "-r",
-                    "30", "-vcodec", "mpeg4", "-b:v",
-                    "400K", "-b:a", "48000", "-ac", "2", "-ar", "22050",
+                    "30", "-vcodec", "mpeg4", ":v",
+                    "400K", ":a", "48000", "-ac", "2", "-ar", "22050",
                     "-t",
                     TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue), outputPath};
         }
@@ -666,36 +666,36 @@ public class ActVideoTrimmer extends LocalizationActivity {
         try {
             new Thread(() -> {
                 int result = FFmpeg.execute(command);
-//                if (result == 0) {
-                dialog.dismiss();
-                if (showFileLocationAlert)
-                    showLocationAlert();
-                else {
-                    Intent intent = new Intent();
-                    intent.putExtra(TrimVideo.TRIMMED_VIDEO_PATH, outputPath);
-                    setResult(RESULT_OK, intent);
-                    finish();
+                if (result == 0) {
+                    dialog.dismiss();
+                    if (showFileLocationAlert)
+                        showLocationAlert();
+                    else {
+                        Intent intent = new Intent();
+                        intent.putExtra(TrimVideo.TRIMMED_VIDEO_PATH, outputPath);
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    }
+                } else if (result == 255) {
+                    LogMessage.v("Command cancelled");
+                    if (dialog.isShowing())
+                        dialog.dismiss();
+                } else {
+                    // Failed case:
+                    // line 489 command fails on some devices in
+                    // that case retrying with accurateCmt as alternative command
+                    if (retry && !isAccurateCut && compressOption == null) {
+                        File newFile = new File(outputPath);
+                        if (newFile.exists())
+                            newFile.delete();
+                        execFFmpegBinary(getAccurateCmd(), false);
+                    } else {
+                        if (dialog.isShowing())
+                            dialog.dismiss();
+                        runOnUiThread(() ->
+                                Toast.makeText(ActVideoTrimmer.this, "Failed to trim", Toast.LENGTH_SHORT).show());
+                    }
                 }
-//                } else if (result == 255) {
-//                    LogMessage.v("Command cancelled");
-//                    if (dialog.isShowing())
-//                        dialog.dismiss();
-//                } else {
-//                    // Failed case:
-//                    // line 489 command fails on some devices in
-//                    // that case retrying with accurateCmt as alternative command
-//                    if (retry && !isAccurateCut && compressOption == null) {
-//                        File newFile = new File(outputPath);
-//                        if (newFile.exists())
-//                            newFile.delete();
-//                        execFFmpegBinary(getAccurateCmd(), false);
-//                    } else {
-//                        if (dialog.isShowing())
-//                            dialog.dismiss();
-//                        runOnUiThread(() ->
-//                                Toast.makeText(ActVideoTrimmer.this, "Failed to trim", Toast.LENGTH_SHORT).show());
-//                    }
-//                }
             }).start();
 
 
