@@ -218,7 +218,7 @@ public class TrimVideo {
             LogMessage.v("sourcePath::" + this.videoUri);
 
 
-            
+
             listener.onProcessing();
 
             String[] complexCommand;
@@ -281,7 +281,7 @@ public class TrimVideo {
 
         private String[] getCompressionCmd() {
             MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-            metaRetriever.setDataSource(String.valueOf(this.videoUri));
+            metaRetriever.setDataSource(activity, this.videoUri);
 
             this.lastMinValue = 0;
             this.lastMaxValue = TrimmerUtils.getDuration(activity, this.videoUri);
