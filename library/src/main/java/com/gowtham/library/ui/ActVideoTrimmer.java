@@ -147,8 +147,6 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
     private CustomProgressView progressView;
     private String fileName;
 
-    private TrimVideo.CompressBuilder compressBuilder;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -162,8 +160,6 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
         setUpToolBar(getSupportActionBar(), trimVideoOptions.title);
         toolbar.setNavigationOnClickListener(v -> finish());
         progressView = new CustomProgressView(this);
-
-        compressBuilder = TrimVideo.compress(this, bundle.getString(TrimVideo.TRIM_VIDEO_URI), this).setCompressOption(new CompressOption());
     }
 
     @Override
@@ -568,7 +564,7 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
             if (SystemClock.elapsedRealtime() - lastClickedTime < 800)
                 return true;
             lastClickedTime = SystemClock.elapsedRealtime();
-            compressBuilder.trimVideo();
+            TrimVideo.compress(this, bundle.getString(TrimVideo.TRIM_VIDEO_URI), this).setCompressOption(new CompressOption()).trimVideo();
             return true;
         }
         return super.onOptionsItemSelected(item);

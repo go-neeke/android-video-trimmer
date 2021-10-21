@@ -179,22 +179,13 @@ public class TrimVideo {
 
         @Nullable
         private Uri videoUri;
+        private String videoPath;
 
-        public CompressBuilder(@Nullable Activity activity, @Nullable String videoUri, CompressBuilderListener listener) {
+        public CompressBuilder(@Nullable Activity activity, @Nullable String videoPath, CompressBuilderListener listener) {
             this.activity = activity;
             this.options = new TrimVideoOptions();
             this.listener = listener;
-            try {
-                this.videoUri = Uri.parse(videoUri);
-                String path = FileUtils.getPath(activity, this.videoUri);
-                this.videoUri = Uri.parse(path);
-
-                this.outputPath = getFileName();
-                this.lastMinValue = 0;
-                this.lastMaxValue = TrimmerUtils.getDuration(activity, this.videoUri);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            this.videoPath = videoPath;
         }
 
         public CompressBuilder setCompressOption(final CompressOption compressOption) {
@@ -204,6 +195,16 @@ public class TrimVideo {
 
         public void trimVideo() {
             //not exceed given maxDuration if has given
+
+            try {
+                this.videoUri = Uri.parse(videoPath);
+                String path = FileUtils.getPath(activity, this.videoUri);
+                this.videoUri = Uri.parse(path);
+                this.outputPath = getFileName();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
 
             LogMessage.v("outputPath::" + outputPath + new File(outputPath).exists());
             LogMessage.v("sourcePath::" + this.videoUri);
@@ -271,6 +272,10 @@ public class TrimVideo {
         private String[] getCompressionCmd() {
             MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
             metaRetriever.setDataSource(String.valueOf(this.videoUri));
+
+            this.lastMinValue = 0;
+            this.lastMaxValue = TrimmerUtils.getDuration(activity, this.videoUri);
+
             String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
             String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
             int w = TrimmerUtils.clearNull(width).isEmpty() ? 0 : Integer.parseInt(width);
