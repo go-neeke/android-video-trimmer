@@ -1,15 +1,31 @@
 package com.gowtham.library.utils;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.arthenica.mobileffmpeg.FFmpeg;
+import com.crystal.crystalrangeseekbar.widgets.CrystalRangeSeekbar;
 import com.google.gson.Gson;
+import com.gowtham.library.R;
 import com.gowtham.library.ui.ActVideoTrimmer;
+
+import java.io.File;
+import java.util.Calendar;
+import java.util.Objects;
+import java.util.concurrent.Executors;
 
 public class TrimVideo {
 
@@ -18,6 +34,10 @@ public class TrimVideo {
 
     public static ActivityBuilder activity(String uri) {
         return new ActivityBuilder(uri);
+    }
+
+    public static CompressBuilder compress(Activity activity, String uri, CompressBuilderListener listener) {
+        return new CompressBuilder(activity, uri, listener);
     }
 
     public static String getTrimmedVideoPath(Intent intent) {
@@ -143,5 +163,167 @@ public class TrimVideo {
         }
     }
 
+    public static final class CompressBuilder {
+        @Nullable
+        private final Activity activity;
 
+        private long lastMinValue = 0;
+
+        private long lastMaxValue = 0;
+
+        private final TrimVideoOptions options;
+
+        private String outputPath;
+
+        private final CompressBuilderListener listener;
+
+        @Nullable
+        private Uri videoUri;
+
+        public CompressBuilder(@Nullable Activity activity, @Nullable String videoUri, CompressBuilderListener listener) {
+            this.activity = activity;
+            this.options = new TrimVideoOptions();
+            this.listener = listener;
+            try {
+                Runnable fileUriRunnable = () -> {
+                    this.videoUri = Uri.parse(videoUri);
+                    String path = FileUtils.getPath(activity, this.videoUri);
+                    this.videoUri = Uri.parse(path);
+
+                    this.outputPath = getFileName();
+                    this.lastMinValue = 0;
+                    this.lastMaxValue = TrimmerUtils.getDuration(activity, this.videoUri);
+                };
+                Executors.newSingleThreadExecutor().execute(fileUriRunnable);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        public CompressBuilder setCompressOption(final CompressOption compressOption) {
+            options.compressOption = compressOption;
+            return this;
+        }
+
+        public void trimVideo() {
+            //not exceed given maxDuration if has given
+
+            LogMessage.v("outputPath::" + outputPath + new File(outputPath).exists());
+            LogMessage.v("sourcePath::" + this.videoUri);
+
+            listener.onProcessing();
+
+            String[] complexCommand;
+            if (options.compressOption != null) {
+                complexCommand = getCompressionCmd();
+            } else {
+                //no changes in video quality
+                //fastest trimming command however, result duration
+                //will be low accurate(2-3 secs)
+                complexCommand = new String[]{"-ss", TrimmerUtils.formatCSeconds(lastMinValue),
+                        "-i", String.valueOf(this.videoUri),
+                        "-t",
+                        TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue),
+                        "-async", "1", "-strict", "-2", "-c", "copy", outputPath};
+            }
+            execFFmpegBinary(complexCommand);
+        }
+
+        private void execFFmpegBinary(final String[] command) {
+            try {
+                new Thread(() -> {
+                    int result = FFmpeg.execute(command);
+                    if (result == 0) {
+                        this.listener.onSuccess(outputPath);
+
+                    } else if (result == 255) {
+                        LogMessage.v("Command cancelled");
+                        this.listener.onFailed();
+                    } else {
+                        activity.runOnUiThread(() ->
+                                {
+                                    Toast.makeText(this.activity, "Failed to trim", Toast.LENGTH_SHORT).show();
+                                    this.listener.onFailed();
+                                }
+                        );
+                    }
+                }).start();
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private String getFileName() {
+            String path = activity.getExternalFilesDir("TrimmedVideo").getPath();
+            Calendar calender = Calendar.getInstance();
+            String fileDateTime = calender.get(Calendar.YEAR) + "_" +
+                    calender.get(Calendar.MONTH) + "_" +
+                    calender.get(Calendar.DAY_OF_MONTH) + "_" +
+                    calender.get(Calendar.HOUR_OF_DAY) + "_" +
+                    calender.get(Calendar.MINUTE) + "_" +
+                    calender.get(Calendar.SECOND);
+            String fName = "trimmed_video_";
+            File newFile = new File(path + File.separator +
+                    (fName) + fileDateTime + "."
+                    + TrimmerUtils.getFileExtension(activity, this.videoUri));
+            return String.valueOf(newFile);
+        }
+
+        private String[] getCompressionCmd() {
+            MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+            metaRetriever.setDataSource(String.valueOf(this.videoUri));
+            String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            int w = TrimmerUtils.clearNull(width).isEmpty() ? 0 : Integer.parseInt(width);
+            int h = Integer.parseInt(height);
+            int rotation = TrimmerUtils.getVideoRotation(activity, this.videoUri);
+            if (rotation == 90 || rotation == 270) {
+                int temp = w;
+                w = h;
+                h = temp;
+            }
+            //Default compression option
+            if (options.compressOption.getWidth() != 0 || options.compressOption.getHeight() != 0
+                    || !options.compressOption.getBitRate().equals("0k")) {
+                return new String[]{"-ss", TrimmerUtils.formatCSeconds(lastMinValue),
+                        "-i", String.valueOf(this.videoUri), "-s", options.compressOption.getWidth() + "x" +
+                        options.compressOption.getHeight(),
+                        "-r", String.valueOf(options.compressOption.getFrameRate()),
+                        "-vcodec", "mpeg4", "-b:v",
+                        options.compressOption.getBitRate(), "-b:a", "48000", "-ac", "2", "-ar",
+                        "22050", "-t",
+                        TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue), outputPath};
+            }
+            //Dividing high resolution video by 2(ex: taken with camera)
+            else if (w >= 800) {
+                w = w / 2;
+                h = Integer.parseInt(height) / 2;
+                return new String[]{"-ss", TrimmerUtils.formatCSeconds(lastMinValue),
+                        "-i", String.valueOf(this.videoUri),
+                        "-s", w + "x" + h, "-r", "30",
+                        "-vcodec", "mpeg4", "-b:v",
+                        "1M", "-b:a", "48000", "-ac", "2", "-ar", "22050",
+                        "-t",
+                        TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue), outputPath};
+            } else {
+                return new String[]{"-ss", TrimmerUtils.formatCSeconds(lastMinValue),
+                        "-i", String.valueOf(this.videoUri), "-s", w + "x" + h, "-r",
+                        "30", "-vcodec", "mpeg4", "-b:v",
+                        "400K", "-b:a", "48000", "-ac", "2", "-ar", "22050",
+                        "-t",
+                        TrimmerUtils.formatCSeconds(lastMaxValue - lastMinValue), outputPath};
+            }
+        }
+
+    }
+
+    public interface CompressBuilderListener {
+        void onProcessing();
+
+        void onSuccess(String outputPath);
+
+        void onFailed();
+    }
 }

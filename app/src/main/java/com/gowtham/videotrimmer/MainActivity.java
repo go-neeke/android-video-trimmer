@@ -108,23 +108,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (trimType == 0) {
             TrimVideo.activity(data)
                     .setCompressOption(new CompressOption()) //pass empty constructor for default compress option
+                    .setEnableEdit(true)
                     .start(this, videoTrimResultLauncher);
         } else if (trimType == 1) {
             TrimVideo.activity(data)
                     .setTrimType(TrimType.FIXED_DURATION)
                     .setFixedDuration(getEdtValueLong(edtFixedGap))
-                    .setLocal("ar")
+                    .setEnableEdit(true).setLocal("ar")
                     .start(this, videoTrimResultLauncher);
         } else if (trimType == 2) {
             TrimVideo.activity(data)
                     .setTrimType(TrimType.MIN_DURATION)
-                    .setLocal("ar")
+                    .setLocal("ar").setEnableEdit(true)
                     .setMinDuration(getEdtValueLong(edtMinGap))
                     .start(this, videoTrimResultLauncher);
         } else {
             TrimVideo.activity(data)
                     .setTrimType(TrimType.MIN_MAX_DURATION)
-                    .setLocal("ar")
+                    .setLocal("ar").setEnableEdit(true)
                     .setMinToMax(getEdtValueLong(edtMinFrom), getEdtValueLong(edtMAxTo))
                     .start(this, videoTrimResultLauncher);
         }
