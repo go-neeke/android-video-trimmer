@@ -217,6 +217,8 @@ public class TrimVideo {
             LogMessage.v("outputPath::" + outputPath + new File(outputPath).exists());
             LogMessage.v("sourcePath::" + this.videoUri);
 
+
+            
             listener.onProcessing();
 
             String[] complexCommand;
