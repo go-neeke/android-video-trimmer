@@ -18,6 +18,10 @@ import androidx.fragment.app.Fragment;
 
 import com.arthenica.mobileffmpeg.FFmpeg;
 import com.crystal.crystalrangeseekbar.widgets.CrystalRangeSeekbar;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.gson.Gson;
 import com.gowtham.library.R;
 import com.gowtham.library.ui.ActVideoTrimmer;
@@ -205,6 +209,10 @@ public class TrimVideo {
                 e.printStackTrace();
             }
 
+
+            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(activity, activity.getString(R.string.app_name));
+            MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(this.videoUri);
 
             LogMessage.v("outputPath::" + outputPath + new File(outputPath).exists());
             LogMessage.v("sourcePath::" + this.videoUri);
