@@ -185,16 +185,13 @@ public class TrimVideo {
             this.options = new TrimVideoOptions();
             this.listener = listener;
             try {
-                Runnable fileUriRunnable = () -> {
-                    this.videoUri = Uri.parse(videoUri);
-                    String path = FileUtils.getPath(activity, this.videoUri);
-                    this.videoUri = Uri.parse(path);
+                this.videoUri = Uri.parse(videoUri);
+                String path = FileUtils.getPath(activity, this.videoUri);
+                this.videoUri = Uri.parse(path);
 
-                    this.outputPath = getFileName();
-                    this.lastMinValue = 0;
-                    this.lastMaxValue = TrimmerUtils.getDuration(activity, this.videoUri);
-                };
-                Executors.newSingleThreadExecutor().execute(fileUriRunnable);
+                this.outputPath = getFileName();
+                this.lastMinValue = 0;
+                this.lastMaxValue = TrimmerUtils.getDuration(activity, this.videoUri);
             } catch (Exception e) {
                 e.printStackTrace();
             }
