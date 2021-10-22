@@ -18,10 +18,6 @@ import androidx.fragment.app.Fragment;
 
 import com.arthenica.mobileffmpeg.FFmpeg;
 import com.crystal.crystalrangeseekbar.widgets.CrystalRangeSeekbar;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.gson.Gson;
 import com.gowtham.library.R;
 import com.gowtham.library.ui.ActVideoTrimmer;
@@ -183,13 +179,25 @@ public class TrimVideo {
 
         @Nullable
         private Uri videoUri;
-        private String videoPath;
 
-        public CompressBuilder(@Nullable Activity activity, @Nullable String videoPath, CompressBuilderListener listener) {
+        public CompressBuilder(@Nullable Activity activity, @Nullable String videoUri, CompressBuilderListener listener) {
             this.activity = activity;
             this.options = new TrimVideoOptions();
             this.listener = listener;
-            this.videoPath = videoPath;
+            try {
+                Runnable fileUriRunnable = () -> {
+                    this.videoUri = Uri.parse(videoUri);
+                    String path = FileUtils.getPath(activity, this.videoUri);
+                    this.videoUri = Uri.parse(path);
+
+                    this.outputPath = getFileName();
+                    this.lastMinValue = 0;
+                    this.lastMaxValue = TrimmerUtils.getDuration(activity, this.videoUri);
+                };
+                Executors.newSingleThreadExecutor().execute(fileUriRunnable);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         public CompressBuilder setCompressOption(final CompressOption compressOption) {
@@ -200,24 +208,8 @@ public class TrimVideo {
         public void trimVideo() {
             //not exceed given maxDuration if has given
 
-            try {
-                this.videoUri = Uri.parse(videoPath);
-                String path = FileUtils.getPath(activity, this.videoUri);
-                this.videoUri = Uri.parse(path);
-                this.outputPath = getFileName();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(activity, activity.getString(R.string.app_name));
-            MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(this.videoUri);
-
             LogMessage.v("outputPath::" + outputPath + new File(outputPath).exists());
             LogMessage.v("sourcePath::" + this.videoUri);
-
-
 
             listener.onProcessing();
 
@@ -281,11 +273,7 @@ public class TrimVideo {
 
         private String[] getCompressionCmd() {
             MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-            metaRetriever.setDataSource(activity, this.videoUri);
-
-            this.lastMinValue = 0;
-            this.lastMaxValue = TrimmerUtils.getDuration(activity, this.videoUri);
-
+            metaRetriever.setDataSource(String.valueOf(this.videoUri));
             String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
             String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
             int w = TrimmerUtils.clearNull(width).isEmpty() ? 0 : Integer.parseInt(width);

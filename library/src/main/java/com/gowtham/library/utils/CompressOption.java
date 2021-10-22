@@ -5,15 +5,19 @@ import android.os.Parcelable;
 
 public class CompressOption {
 
-    private int frameRate=30;
+    private int frameRate = 30;
 
-    private String bitRate="0k";
+    private String bitRate = "0k";
 
-    private int width=0;
+    private int width = 0;
 
-    private int height=0;
+    private int height = 0;
 
     public CompressOption() {
+    }
+
+    public CompressOption(String bitRate) {
+        this.bitRate = bitRate;
     }
 
     public CompressOption(int frameRate, String bitRate, int width, int height) {
