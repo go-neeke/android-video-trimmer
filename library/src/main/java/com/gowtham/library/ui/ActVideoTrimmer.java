@@ -635,13 +635,13 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
             dialog = new Dialog(this);
             dialog.setCancelable(false);
             dialog.setContentView(R.layout.alert_convert);
-            TextView txtCancel = dialog.findViewById(R.id.txt_cancel);
+//            TextView txtCancel = dialog.findViewById(R.id.txt_cancel);
             dialog.setCancelable(false);
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            txtCancel.setOnClickListener(v -> {
-                dialog.dismiss();
-                FFmpeg.cancel();
-            });
+//            txtCancel.setOnClickListener(v -> {
+//                dialog.dismiss();
+//                FFmpeg.cancel();
+//            });
             dialog.show();
         } catch (Exception e) {
             e.printStackTrace();
