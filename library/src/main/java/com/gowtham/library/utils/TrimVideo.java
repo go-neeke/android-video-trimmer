@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -193,6 +194,8 @@ public class TrimVideo {
                     this.outputPath = getFileName();
                     this.lastMinValue = 0;
                     this.lastMaxValue = TrimmerUtils.getDuration(activity, this.videoUri);
+
+                    Log.d("A.lee", "this.lastMaxValue" + this.lastMaxValue);
                 };
                 Executors.newSingleThreadExecutor().execute(fileUriRunnable);
             } catch (Exception e) {
@@ -217,6 +220,7 @@ public class TrimVideo {
             if (options.compressOption != null) {
                 complexCommand = getCompressionCmd();
             } else {
+                Log.d("A.lee", "trimVideo");
                 //no changes in video quality
                 //fastest trimming command however, result duration
                 //will be low accurate(2-3 secs)
