@@ -33,6 +33,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.viewpager.widget.PagerAdapter;
 
 import com.akexorcist.localizationactivity.ui.LocalizationActivity;
 import com.arthenica.mobileffmpeg.FFmpeg;
@@ -161,6 +162,7 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
         trimVideoOptions = gson.fromJson(videoOption, TrimVideoOptions.class);
         setUpToolBar(getSupportActionBar(), trimVideoOptions.title);
         toolbar.setNavigationOnClickListener(v -> finish());
+        toolbar.setVisibility(trimVideoOptions.isExecute ? View.GONE : View.VISIBLE);
         progressView = new CustomProgressView(this);
 
         compressBuilder = TrimVideo.compress(this, bundle.getString(TrimVideo.TRIM_VIDEO_URI), this).setCompressOption(new CompressOption());
@@ -181,6 +183,13 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
         txtEndDuration = findViewById(R.id.txt_end_duration);
         seekbarController = findViewById(R.id.seekbar_controller);
         progressBar = findViewById(R.id.progress_circular);
+
+        imagePlayPause.setVisibility(trimVideoOptions.isExecute ? View.GONE : View.VISIBLE);
+        seekbar.setVisibility(trimVideoOptions.isExecute ? View.GONE : View.VISIBLE);
+        txtStartDuration.setVisibility(trimVideoOptions.isExecute ? View.GONE : View.VISIBLE);
+        txtEndDuration.setVisibility(trimVideoOptions.isExecute ? View.GONE : View.VISIBLE);
+        seekbarController.setVisibility(trimVideoOptions.isExecute ? View.GONE : View.VISIBLE);
+
         ImageView imageOne = findViewById(R.id.image_one);
         ImageView imageTwo = findViewById(R.id.image_two);
         ImageView imageThree = findViewById(R.id.image_three);
@@ -240,24 +249,29 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
                 uri = Uri.parse(bundle.getString(TrimVideo.TRIM_VIDEO_URI));
                 String path = FileUtils.getPath(ActVideoTrimmer.this, uri);
                 uri = Uri.parse(path);
-                runOnUiThread(() -> {
-                    LogMessage.v("VideoUri:: " + uri);
-                    LogMessage.v("VideoUri:: " + uri.getPath());
-                    progressBar.setVisibility(View.GONE);
-                    totalDuration = TrimmerUtils.getDuration(ActVideoTrimmer.this, uri);
+
+                totalDuration = TrimmerUtils.getDuration(ActVideoTrimmer.this, uri);
+                LogMessage.v("totalDuration:: " + totalDuration);
+
+                if (trimVideoOptions.isExecute) {
+                    compressBuilder.trimVideo();
+                } else {
+                    runOnUiThread(() -> {
+                        LogMessage.v("VideoUri:: " + uri);
+                        LogMessage.v("VideoUri:: " + uri.getPath());
+                        progressBar.setVisibility(View.GONE);
 
 
-                    LogMessage.v("totalDuration:: " + totalDuration);
-
-                    imagePlayPause.setOnClickListener(v ->
-                            onVideoClicked());
-                    Objects.requireNonNull(playerView.getVideoSurfaceView()).setOnClickListener(v ->
-                            onVideoClicked());
-                    initTrimData();
-                    buildMediaSource(uri);
-                    loadThumbnails();
-                    setUpSeekBar();
-                });
+                        imagePlayPause.setOnClickListener(v ->
+                                onVideoClicked());
+                        Objects.requireNonNull(playerView.getVideoSurfaceView()).setOnClickListener(v ->
+                                onVideoClicked());
+                        initTrimData();
+                        buildMediaSource(uri);
+                        loadThumbnails();
+                        setUpSeekBar();
+                    });
+                }
             };
             Executors.newSingleThreadExecutor().execute(fileUriRunnable);
         } catch (Exception e) {
@@ -697,7 +711,7 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
 
     @Override
     public void onSuccess(String outputPath) {
-        dialog.dismiss();
+//        dialog.dismiss();
         if (showFileLocationAlert)
             showLocationAlert();
         else {

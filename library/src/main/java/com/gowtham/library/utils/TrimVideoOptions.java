@@ -24,6 +24,8 @@ public class TrimVideoOptions {
 
     public boolean isEnableEdit;
 
+    public boolean isExecute;
+
     public TrimVideoOptions() {
     }
 

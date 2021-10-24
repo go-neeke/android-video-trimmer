@@ -118,6 +118,11 @@ public class TrimVideo {
             return this;
         }
 
+        public ActivityBuilder setExecute(boolean isExecute) {
+            options.isExecute = isExecute;
+            return this;
+        }
+
         public void start(Activity activity,
                           ActivityResultLauncher<Intent> launcher) {
             validate();
