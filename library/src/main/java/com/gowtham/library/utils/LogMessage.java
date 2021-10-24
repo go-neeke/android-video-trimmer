@@ -8,11 +8,11 @@ public class LogMessage {
 
     public static void v(String msg) {
         if (IS_LOG)
-            Log.v("VIDEO_TRIMMER ::", msg);
+            Log.v("A.lee ::", msg);
     }
 
     public static void e(String msg) {
         if (IS_LOG)
-            Log.e("VIDEO_TRIMMER ::", msg);
+            Log.e("A.lee ::", msg);
     }
 }

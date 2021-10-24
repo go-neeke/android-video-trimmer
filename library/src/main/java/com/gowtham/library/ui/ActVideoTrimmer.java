@@ -245,6 +245,10 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
                     LogMessage.v("VideoUri:: " + uri.getPath());
                     progressBar.setVisibility(View.GONE);
                     totalDuration = TrimmerUtils.getDuration(ActVideoTrimmer.this, uri);
+
+
+                    LogMessage.v("totalDuration:: " + totalDuration);
+
                     imagePlayPause.setOnClickListener(v ->
                             onVideoClicked());
                     Objects.requireNonNull(playerView.getVideoSurfaceView()).setOnClickListener(v ->
