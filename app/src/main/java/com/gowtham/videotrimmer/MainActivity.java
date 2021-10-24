@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             TrimVideo.activity(data)
                     .setCompressOption(new CompressOption()) //pass empty constructor for default compress option
                     .setEnableEdit(true)
-                    .setExecute(true)
+//                    .setExecute(true)
                     .start(this, videoTrimResultLauncher);
         } else if (trimType == 1) {
             TrimVideo.activity(data)
