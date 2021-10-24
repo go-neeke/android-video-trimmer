@@ -33,10 +33,25 @@
                 android:src="@drawable/ic_video_play_lib"
                 android:visibility="gone" />
 
-            <ProgressBar
+            <LinearLayout
                 android:id="@+id/progress_circular"
                 style="@style/WView"
-                android:layout_centerInParent="true" />
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ProgressBar
+                    style="@style/WView"
+                    android:layout_gravity="center_horizontal" />
+
+                <TextView
+                    style="@style/WView"
+                    android:layout_marginTop="8dp"
+                    android:text="동영상 압축중입니다..."
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
+
+
         </RelativeLayout>
 
     </LinearLayout>

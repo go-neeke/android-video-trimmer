@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -118,7 +119,7 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
 
     private Bundle bundle;
 
-    private ProgressBar progressBar;
+    private LinearLayout progressBar;
 
     private TrimVideoOptions trimVideoOptions;
 
