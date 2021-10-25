@@ -731,12 +731,16 @@ public class ActVideoTrimmer extends LocalizationActivity implements TrimVideo.C
 
     @Override
     public void onProcessing() {
+        runOnUiThread(() -> {
+            LogMessage.v("onProcessing:: ");
+            progressBar.setVisibility(View.VISIBLE);
+            imagePlayPause.setVisibility(View.GONE);
+            seekbar.setVisibility(View.GONE);
+            txtStartDuration.setVisibility(View.GONE);
+            txtEndDuration.setVisibility(View.GONE);
+            seekbarController.setVisibility(View.GONE);
+        });
         //showProcessingDialog();
-        progressBar.setVisibility(View.VISIBLE);
-        imagePlayPause.setVisibility(View.GONE);
-        seekbar.setVisibility(View.GONE);
-        txtStartDuration.setVisibility(View.GONE);
-        txtEndDuration.setVisibility(View.GONE);
-        seekbarController.setVisibility(View.GONE);
+
     }
 }
