@@ -4,7 +4,7 @@ public class TrimVideoOptions {
 
     public String fileName;
 
-    public TrimType trimType = TrimType.DEFAULT;
+    public TrimType trimType;
 
     public long minDuration, fixedDuration;
 
